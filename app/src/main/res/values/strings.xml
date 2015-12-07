@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">AppTrajeto</string>
+    <string name="title_activity_mapa"></string>
+    <string name="title_activity_first"></string>
+
+    <string name="hello_world"></string>
+    <string name="action_settings"></string>
+    <string name="title_activity_second"></string>
+    <string name="title_activity_lista"></string>
+</resources>

@@ -1,0 +1,70 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vanessa.apptrajeto.FirstActivity">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="80px"
+        android:background="@drawable/first_layout"
+        android:weightSum="1"
+        android:id="@+id/linearLayout"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true">
+
+        <ImageView
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginLeft="20px"
+            android:layout_marginTop="5px"
+            android:id="@+id/imageView"
+            android:src="@drawable/mapaicone" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:layout_marginLeft="30px"
+            android:layout_marginTop="15px"
+            android:textColor="#FFFFFF"
+            android:text="AppTrajeto"
+            android:id="@+id/textView" />
+
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="50px"
+        android:background="#18400A"
+        android:weightSum="1"
+        android:id="@+id/linearLayout2"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true">
+    </LinearLayout>
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="150dp"
+        android:text="Novo Trajeto"
+        android:textColor="#9ACD32"
+        android:textSize="30sp"
+        android:background="@drawable/first_layout_botao"
+        android:id="@+id/button"
+        android:layout_marginBottom="42dp"
+        android:layout_above="@+id/button2"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="300dp"
+        android:layout_height="150dp"
+        android:text="Restaurar Trajeto"
+        android:textColor="#9ACD32"
+        android:textSize="30sp"
+        android:background="@drawable/first_layout_botao"
+        android:id="@+id/button2"
+        android:layout_marginBottom="44dp"
+        android:layout_above="@+id/linearLayout2"
+        android:layout_alignStart="@+id/button" />
+
+</RelativeLayout>
