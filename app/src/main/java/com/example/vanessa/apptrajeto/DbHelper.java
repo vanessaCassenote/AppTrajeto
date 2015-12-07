@@ -26,6 +26,7 @@ public class DbHelper extends SQLiteOpenHelper{
                 + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + "nome TEXT,"
                 + "largura int,"
+                + "area double,"
                 + "ponto0Latitude TEXT,"
                 + "ponto1Longitude TEXT,"
                 + "ponto2Latitude TEXT,"
@@ -46,8 +47,16 @@ public class DbHelper extends SQLiteOpenHelper{
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        String sqlDropTabelaLivros = "DROP TABLE "+TABELA+"";
-        db.execSQL(sqlDropTabelaLivros);
+        String sqlDropTrajetos = "DROP TABLE "+TABELA+"";
+        db.execSQL(sqlDropTrajetos);
+
+        onCreate(db);
+    }
+
+    public void deleteDatabase(){
+        SQLiteDatabase db = getWritableDatabase();
+        String sqlDropTrajetos = "DROP TABLE "+TABELA+"";
+        db.execSQL(sqlDropTrajetos);
 
         onCreate(db);
     }
@@ -60,6 +69,7 @@ public class DbHelper extends SQLiteOpenHelper{
 
         cv.put("nome", trajeto.getNome());
         cv.put("largura", trajeto.getLargura());
+        cv.put("area", trajeto.getArea());
         cv.put("ponto0Latitude", trajeto.getPonto0Latitude());
         cv.put("ponto1Longitude", trajeto.getPonto1Longitude());
         cv.put("ponto2Latitude", trajeto.getPonto2Latitude());
@@ -91,18 +101,19 @@ public class DbHelper extends SQLiteOpenHelper{
                 trajeto.setId(c.getInt(0));
                 trajeto.setNome(c.getString(1));
                 trajeto.setLargura(c.getInt(2));
-                trajeto.setPonto0Latitude(c.getDouble(3));
-                trajeto.setPonto1Longitude(c.getDouble(4));
-                trajeto.setPonto2Latitude(c.getDouble(5));
-                trajeto.setPonto3Longitude(c.getDouble(6));
-                trajeto.setPonto4Latitude(c.getDouble(7));
-                trajeto.setPonto5Longitude(c.getDouble(8));
-                trajeto.setPonto6Latitude(c.getDouble(9));
-                trajeto.setPonto7Longitude(c.getDouble(10));
-                trajeto.setPonto8Latitude(c.getDouble(11));
-                trajeto.setPonto9Longitude(c.getDouble(12));
-                trajeto.setPonto10Latitude(c.getDouble(13));
-                trajeto.setPonto11Longitude(c.getDouble(14));
+                trajeto.setArea(c.getDouble(3));
+                trajeto.setPonto0Latitude(c.getDouble(4));
+                trajeto.setPonto1Longitude(c.getDouble(5));
+                trajeto.setPonto2Latitude(c.getDouble(6));
+                trajeto.setPonto3Longitude(c.getDouble(7));
+                trajeto.setPonto4Latitude(c.getDouble(8));
+                trajeto.setPonto5Longitude(c.getDouble(9));
+                trajeto.setPonto6Latitude(c.getDouble(10));
+                trajeto.setPonto7Longitude(c.getDouble(11));
+                trajeto.setPonto8Latitude(c.getDouble(12));
+                trajeto.setPonto9Longitude(c.getDouble(13));
+                trajeto.setPonto10Latitude(c.getDouble(14));
+                trajeto.setPonto11Longitude(c.getDouble(15));
 
                 listTrajetos.add(trajeto);
             }while(c.moveToNext());
@@ -116,8 +127,8 @@ public class DbHelper extends SQLiteOpenHelper{
 
         List<Trajeto> listTrajetos = new ArrayList<Trajeto>();
         SQLiteDatabase db = getReadableDatabase();
-        String sqlSelectTodosLivros = "SELECT id, nome FROM "+TABELA+"";
-        Cursor c = db.rawQuery(sqlSelectTodosLivros, null);
+        String sqlSelectTraj = "SELECT id, nome FROM "+TABELA+"";
+        Cursor c = db.rawQuery(sqlSelectTraj, null);
 
         if(c.moveToFirst()){
             do{
@@ -131,6 +142,7 @@ public class DbHelper extends SQLiteOpenHelper{
         db.close();
         return listTrajetos;
     }
+
     public Trajeto selectById(int id){
 
         Trajeto trajeto = new Trajeto();
@@ -143,18 +155,20 @@ public class DbHelper extends SQLiteOpenHelper{
                 trajeto.setId(c.getInt(0));
                 trajeto.setNome(c.getString(1));
                 trajeto.setLargura(c.getInt(2));
-                trajeto.setPonto0Latitude(c.getDouble(3));
-                trajeto.setPonto1Longitude(c.getDouble(4));
-                trajeto.setPonto2Latitude(c.getDouble(5));
-                trajeto.setPonto3Longitude(c.getDouble(6));
-                trajeto.setPonto4Latitude(c.getDouble(7));
-                trajeto.setPonto5Longitude(c.getDouble(8));
-                trajeto.setPonto6Latitude(c.getDouble(9));
-                trajeto.setPonto7Longitude(c.getDouble(10));
-                trajeto.setPonto8Latitude(c.getDouble(11));
-                trajeto.setPonto9Longitude(c.getDouble(12));
-                trajeto.setPonto10Latitude(c.getDouble(13));
-                trajeto.setPonto11Longitude(c.getDouble(14));
+                trajeto.setArea(c.getDouble(3));
+                trajeto.setPonto0Latitude(c.getDouble(4));
+                trajeto.setPonto1Longitude(c.getDouble(5));
+                trajeto.setPonto2Latitude(c.getDouble(6));
+                trajeto.setPonto3Longitude(c.getDouble(7));
+                trajeto.setPonto4Latitude(c.getDouble(8));
+                trajeto.setPonto5Longitude(c.getDouble(9));
+                trajeto.setPonto6Latitude(c.getDouble(10));
+                trajeto.setPonto7Longitude(c.getDouble(11));
+                trajeto.setPonto8Latitude(c.getDouble(12));
+                trajeto.setPonto9Longitude(c.getDouble(13));
+                trajeto.setPonto10Latitude(c.getDouble(14));
+                trajeto.setPonto11Longitude(c.getDouble(15));
+
             }while(c.moveToNext());
         }
 
@@ -183,6 +197,7 @@ public class DbHelper extends SQLiteOpenHelper{
         ContentValues cv = new ContentValues();
         cv.put("nome", trajeto.getNome());
         cv.put("largura", trajeto.getLargura());
+        cv.put("area", trajeto.getArea());
         cv.put("ponto0Latitude", trajeto.getPonto0Latitude());
         cv.put("ponto1Longitude", trajeto.getPonto1Longitude());
         cv.put("ponto2Latitude", trajeto.getPonto2Latitude());

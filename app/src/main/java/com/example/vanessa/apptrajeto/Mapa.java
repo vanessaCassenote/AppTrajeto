@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -58,7 +59,7 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
     boolean haveFirstPoint = false;
     boolean first = true;
     LatLng oldCoord;
-    float totalArea;
+    double totalArea = 0;
     Location oldLocation;
     float testArea = 0;
     List<Double> listaPontos = new ArrayList<Double>();
@@ -68,6 +69,8 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
     int update = 0;
     String nomeTrajeto;
     Trajeto trajInsertUpdate;
+    private TextView area;
+    private int largura;
 
     private static final String TAGG = "DialogActivity";
     private static final int DLG_EXAMPLE1 = 0;
@@ -83,28 +86,54 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         setContentView(R.layout.activity_mapa);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setUpMapIfNeeded();
+
         // Create the LocationRequest object
         mLocationRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(1000)        // 1 second, in milliseconds
                 .setFastestInterval(1000); // 1 second, in milliseconds
 
+        area = (TextView) findViewById(R.id.textView3);
         parar = (Button) findViewById(R.id.parar);
         parar.setOnClickListener(buttonParar);
 
+
+        /*DbHelper db = new DbHelper(this);
+        db.deleteDatabase();*/
+
+        /*DbHelper db = new DbHelper(this);
+        List<Trajeto> listaTrajetos = db.selectAll();
+
+        for (Iterator iterator = listaTrajetos.iterator(); iterator.hasNext();) {
+            Trajeto t = (Trajeto) iterator.next();
+            System.out.println(t.toString());
+        }*/
+
+        //MSG recebe o id do item selecionado, quando o usuario restaurar um trajeto
         Intent i = getIntent();
-        String mensagemRecebida = i.getStringExtra(ListaActivity.MSG);
+        String restauraTrajeto = i.getStringExtra(ListaActivity.MSG);
 
-        if(mensagemRecebida != null){
+        //MENSAGEM recebe a largura do equipamento inserida pelo usuario
+        Intent j = getIntent();
+        String larg = j.getStringExtra(SecondActivity.MENSAGEM);
+        if(larg != null){
+            largura = Integer.parseInt(larg);
+        }
 
+        if(restauraTrajeto != null){
             DbHelper dbHelper = new DbHelper(this);
-            trajInsertUpdate = dbHelper.selectById(Integer.parseInt(mensagemRecebida));
+            trajInsertUpdate = dbHelper.selectById(Integer.parseInt(restauraTrajeto));
 
             //Inicializa vetor que cuida da ordem dos pontos
             val.add(0,0);
             val.add(1,0);
             val.add(2,0);
             val.add(3,0);
+
+            //seta a area guardada no banco como valor inicial
+            totalArea = trajInsertUpdate.getArea();
+            area.setText("ÁREA: " + String.format("%.2f", totalArea) + "m²");
+            largura = trajInsertUpdate.getLargura();
 
             //Inicializa os pontos da lista com os pontos que estavam salvos no banco.
             initPontos(trajInsertUpdate.getPonto0Latitude(), trajInsertUpdate.getPonto1Longitude(),
@@ -235,6 +264,8 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                         .add(latLng);
                 Polyline polyline = mMap.addPolyline(rectOptions);
                 setTotalArea(location, oldCoord);
+
+                area.setText("ÁREA: " + String.format("%.2f", totalArea) + "m²");
                 oldCoord = latLng;
 
                 //Guarda os pontos em uma lista testando sua posição em relação aos já guardados.
@@ -426,6 +457,7 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
             if(update == 0){
                 trajInsertUpdate = new Trajeto();
             }
+            trajInsertUpdate.setArea(totalArea);
             trajInsertUpdate.setPonto0Latitude(listaPontos.get(0));
             trajInsertUpdate.setPonto1Longitude(listaPontos.get(1));
             trajInsertUpdate.setPonto2Latitude(listaPontos.get(pos4));
@@ -441,9 +473,8 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
 
             if(update == 0) {
                 //Salva no banco
-                Intent receberMensagem = getIntent();
-                String mensagemRecebida = receberMensagem.getStringExtra(SecondActivity.MENSAGEM);
-                trajInsertUpdate.setLargura(Integer.parseInt(mensagemRecebida));
+
+                trajInsertUpdate.setLargura(largura);
                 trajInsertUpdate.setNome(nomeTrajeto);
 
                 dbHelper.insert(trajInsertUpdate);
@@ -494,13 +525,16 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         currentLocation = new Location();
         currentLocation.
     }*/
-
     public void setTotalArea (Location location, LatLng oldCoord){
         Location oldLocation = new Location("");
         oldLocation.setLatitude(oldCoord.latitude);
         oldLocation.setLongitude(oldCoord.longitude);
-        totalArea = location.distanceTo(oldLocation);
-        System.out.println("Area: " + totalArea);
+        if(totalArea == 0){
+            totalArea = largura * location.distanceTo(oldLocation);
+        }else{
+            totalArea = totalArea + (largura * location.distanceTo(oldLocation));
+        }
+        //System.out.println("Area: " + totalArea);
     }
 
     public void getStartPoint (Location location){

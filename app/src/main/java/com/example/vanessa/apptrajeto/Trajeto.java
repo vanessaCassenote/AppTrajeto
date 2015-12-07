@@ -7,6 +7,7 @@ public class Trajeto {
     private int id;
     private String nome;
     private int largura;
+    private double area;
     private double ponto0Latitude;
     private double ponto1Longitude;
     private double ponto2Latitude;
@@ -143,12 +144,20 @@ public class Trajeto {
         this.largura = largura;
     }
 
+    public double getArea() {
+        return area;
+    }
+
+    public void setArea(double area) {
+        this.area = area;
+    }
 
     public String toStringAll() {
         return "Trajeto{" +
                 "id=" + id +
                 ", nome='" + nome + '\'' +
                 ", largura=" + largura +
+                ", area=" + area +
                 ", ponto0Latitude=" + ponto0Latitude +
                 ", ponto1Longitude=" + ponto1Longitude +
                 ", ponto2Latitude=" + ponto2Latitude +
