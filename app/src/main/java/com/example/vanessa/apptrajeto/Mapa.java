@@ -98,17 +98,6 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         parar.setOnClickListener(buttonParar);
 
 
-        /*DbHelper db = new DbHelper(this);
-        db.deleteDatabase();*/
-
-        /*DbHelper db = new DbHelper(this);
-        List<Trajeto> listaTrajetos = db.selectAll();
-
-        for (Iterator iterator = listaTrajetos.iterator(); iterator.hasNext();) {
-            Trajeto t = (Trajeto) iterator.next();
-            System.out.println(t.toString());
-        }*/
-
         //MSG recebe o id do item selecionado, quando o usuario restaurar um trajeto
         Intent i = getIntent();
         String restauraTrajeto = i.getStringExtra(ListaActivity.MSG);
@@ -116,33 +105,46 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         //MENSAGEM recebe a largura do equipamento inserida pelo usuario
         Intent j = getIntent();
         String larg = j.getStringExtra(SecondActivity.MENSAGEM);
+        //Teste necessario para a situação onde o cliente esta restaurando um trajeto
+        //no caso larg sera nulo.
         if(larg != null){
             largura = Integer.parseInt(larg);
         }
 
+        //Testa se o usuario esta restaurando um trajeto
         if(restauraTrajeto != null){
+            //Busca no banco os dados do trajeto que o usuario quer restaurar.
             DbHelper dbHelper = new DbHelper(this);
             trajInsertUpdate = dbHelper.selectById(Integer.parseInt(restauraTrajeto));
 
-            //Inicializa vetor que cuida da ordem dos pontos
+            //Inicializa vetor que controla a ordem em que os pontos foram sendo guardados,
+            //para que os pontos sejam salvos no banco na ordem em que o trajeto foi percorrido.
             val.add(0,0);
             val.add(1,0);
             val.add(2,0);
             val.add(3,0);
 
-            //seta a area guardada no banco como valor inicial
+            //Inicializa a area com o valor guardado no banco(no caso o trajeto esta sendo restaurado)
             totalArea = trajInsertUpdate.getArea();
+            //Seta o valor da area para o textView
             area.setText("ÁREA: " + String.format("%.2f", totalArea) + "m²");
+            //Inicializa a variavel de largura do equipamento com o valor guardado no banco
             largura = trajInsertUpdate.getLargura();
 
-            //Inicializa os pontos da lista com os pontos que estavam salvos no banco.
+            //Inicializa a lista(que possui os pontos que serao salvos no banco)
+            //com os pontos que estavam salvos(no caso o trajeto esta sendo restaurado)
             initPontos(trajInsertUpdate.getPonto0Latitude(), trajInsertUpdate.getPonto1Longitude(),
                     trajInsertUpdate.getPonto2Latitude(), trajInsertUpdate.getPonto3Longitude(),
                     trajInsertUpdate.getPonto4Latitude(), trajInsertUpdate.getPonto5Longitude(),
                     trajInsertUpdate.getPonto6Latitude(), trajInsertUpdate.getPonto7Longitude(),
                     trajInsertUpdate.getPonto8Latitude(), trajInsertUpdate.getPonto9Longitude(),
                     trajInsertUpdate.getPonto10Latitude(), trajInsertUpdate.getPonto11Longitude());
+
+            //Pinta na tela o trajeto que estava salvo no banco
             pintaTrajeto(trajInsertUpdate);
+
+            //update = 0 :o usuario esta criando um novo trajeto
+            //update = 1 :o usuario esta restaurando um trajeto
             update = 1;
         }
     }
@@ -163,21 +165,6 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         }
     }
 
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
         if (mMap == null) {
@@ -194,15 +181,8 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
     private void setUpMap() {
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-
     }
 
     @Override
@@ -263,12 +243,14 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                         .add(oldCoord)
                         .add(latLng);
                 Polyline polyline = mMap.addPolyline(rectOptions);
-                setTotalArea(location, oldCoord);
 
+                //Faz o calculo da area de acordo com a distancia entre os pontos e a largura do equipamento.
+                setTotalArea(location, oldCoord);
+                //Seta o valor atualizado da área
                 area.setText("ÁREA: " + String.format("%.2f", totalArea) + "m²");
                 oldCoord = latLng;
 
-                //Guarda os pontos em uma lista testando sua posição em relação aos já guardados.
+                //Guarda os pontos(em uma lista) que serao inseridos no banco.
                 guardaPosicao(currentLatitude, currentLongitude);
             }
         }
@@ -278,6 +260,11 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
     }
 
     public void initPontos(double lat1, double long1, double lat2, double long2, double lat3, double long3, double lat4, double long4, double lat5, double long5, double lat6, double long6){
+
+        //Inicializa os pontos da lista.
+        //Se for um trajeto novo, todos serao inicializados com o primeiro ponto.
+        //Se for um trajeto restaurado, todos serao inicializados com os pontos que estavam no banco.
+
         //primeiro ponto(0,1)
         listaPontos.add(lat1);
         listaPontos.add(long1);
@@ -298,19 +285,20 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         listaPontos.add(long6);
     }
 
+    //Codigo do pop up, onde o usuario insere o nome do trajeto a ser salvo
     View.OnClickListener buttonParar = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            //Se for um trajeto novo, o pop up abre
             if(update == 0) {
                 showDialog(DLG_EXAMPLE1);
+                //Se for um trajeto restaurado o nome ja existe, portanto o pop up nao abre
             }else if(update == 1){
+                //Esta flag indica que o trajeto deve ser inserido ou atualizado no banco.
                 pararPontos = 1;
             }
         }
     };
-    /**
-     * Called to create a dialog to be shown.
-     */
     @Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
@@ -320,11 +308,6 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                 return null;
         }
     }
-    /**
-     * If a dialog has already been created,
-     * this is called to reset the dialog
-     * before showing it a 2nd time. Optional.
-     */
     @Override
     protected void onPrepareDialog(int id, Dialog dialog) {
         switch (id) {
@@ -335,9 +318,6 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                 break;
         }
     }
-    /**
-     * Create and return an example alert dialog with an edit text box.
-     */
     private Dialog createExampleDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Olá!");
@@ -366,6 +346,8 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         return builder.create();
     }
 
+    //Funcao que busca os maiores valores dentro de uma lista
+    //usada com a lista que ordena os pontos.
     public int buscaMaior(List l, int teste){
         int maior = teste;
         for (Iterator iterator = l.iterator(); iterator.hasNext();) {
@@ -376,6 +358,9 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         }
         return l.lastIndexOf(maior);
     }
+
+    //Funcao retorna a posicao da latitude da lista de coordenadas
+    //dependendo da posicao da lista que ordena os pontos.
     public int buscaCoordenada(int index){
         if(index == 0){
             return 2;
@@ -389,25 +374,37 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         return 0;
     }
 
+    //Seleciona os pontos a serem salvos ou alterados no banco.
     public void guardaPosicao(double Lat, double Long){
 
+        //Se a lista de pontos estiver vazia ela e a lista
+        //de ordenacao sao inicializadas.
         if(listaPontos.isEmpty()){
+
             //Inicializa a lista que testa a posicao dos pontos
             val.add(0,0);
             val.add(1,0);
             val.add(2,0);
             val.add(3,0);
-            //Salva primeiro ponto e inicializa os outros
+
+            //Inicializa todos os pontos com a primeira coordenada.
             initPontos(Lat, Long, Lat, Long, Lat, Long, Lat, Long, Lat, Long, Lat, Long);
 
+            //Se pararPontos = 1 , o usuario clicou no botao parar
+            //aqui o ultimo ponto e salvo na lista.
         }else if(pararPontos == 1){
+
             //Salva o ultimo ponto
             listaPontos.set(10, Lat);
             listaPontos.set(11, Long);
+
+            //Inserir ou modificar os pontos no banco.
             pararPontos = 2;
 
+            //Testa os pontos a serem salvos.
         }else if(pararPontos == 0){
 
+            //Busca o ponto mais ao norte
             if (Lat > LatAnterior) {
 
                 listaPontos.set(2, Lat);
@@ -415,6 +412,7 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                 valor++;
                 val.set(0,valor);
 
+                //Busca o ponto mais ao sul
             } else if (Lat < LatAnterior) {
 
                 listaPontos.set(4, Lat);
@@ -422,6 +420,7 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                 valor++;
                 val.set(1,valor);
             }
+            //Busca o ponto mais ao leste
             if (Long > LongAnterior) {
 
                 listaPontos.set(6, Lat);
@@ -429,6 +428,7 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                 valor++;
                 val.set(2,valor);
 
+                //Busca o ponto mais ao oeste
             } else if (Long < LongAnterior) {
 
                 listaPontos.set(8, Lat);
@@ -438,8 +438,10 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
             }
         }
 
+        //Insere ou modifica os pontos no banco.
         if(pararPontos == 2){
-            //Ordena pontos
+
+            //Ordena pontos de acordo com os valores da lista val
             int index1 = buscaMaior(val, val.get(0));
             int pos1 = buscaCoordenada(index1);
             val.set(index1, -1);
@@ -455,8 +457,10 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
 
             DbHelper dbHelper = new DbHelper(this);
             if(update == 0){
+                //Se for um novo trajeto, ele e criado.
                 trajInsertUpdate = new Trajeto();
             }
+            //Seta os valores para serem inseridos ou modificados no banco.
             trajInsertUpdate.setArea(totalArea);
             trajInsertUpdate.setPonto0Latitude(listaPontos.get(0));
             trajInsertUpdate.setPonto1Longitude(listaPontos.get(1));
@@ -472,8 +476,7 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
             trajInsertUpdate.setPonto11Longitude(listaPontos.get(11));
 
             if(update == 0) {
-                //Salva no banco
-
+                //Salva trajeto no banco.
                 trajInsertUpdate.setLargura(largura);
                 trajInsertUpdate.setNome(nomeTrajeto);
 
@@ -481,15 +484,18 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
                 Toast.makeText(getApplicationContext(),"Trajeto inserido no banco!", Toast.LENGTH_LONG).show();
 
             }else if(update == 1){
+                //Altera trajeto no banco.
                 dbHelper.updateById(trajInsertUpdate);
                 Toast.makeText(getApplicationContext(),"Trajeto alterado com sucesso!", Toast.LENGTH_LONG).show();
             }
             pararPontos = 3;
         }
+        //Recebe o ponto anterior para testar com o ponto atual.
         LatAnterior = Lat;
         LongAnterior = Long;
     }
 
+    //Desenha um poligono na tela de acordo com os pontos.
     public void pintaTrajeto(Trajeto traj){
 
         Polygon polygon = mMap.addPolygon(new PolygonOptions()
@@ -525,6 +531,8 @@ public class Mapa extends FragmentActivity implements GoogleApiClient.Connection
         currentLocation = new Location();
         currentLocation.
     }*/
+
+    //Calcula a distancia entre os pontos e calcula a area.
     public void setTotalArea (Location location, LatLng oldCoord){
         Location oldLocation = new Location("");
         oldLocation.setLatitude(oldCoord.latitude);
